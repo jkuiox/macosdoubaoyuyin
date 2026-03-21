@@ -416,7 +416,7 @@ class ASRClient {
 
         var packet = Data()
         packet.append(contentsOf: header)
-        var seq: Int32 = 1
+        let seq: Int32 = 1
         var seqBE = seq.bigEndian
         packet.append(Data(bytes: &seqBE, count: 4))
         var size = UInt32(gzipped.count).bigEndian

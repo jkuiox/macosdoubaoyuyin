@@ -1,9 +1,21 @@
 import Cocoa
 import Carbon.HIToolbox
+import os.log
+
+private let logger = Logger(subsystem: "cn.skyrin.yapyap", category: "TextInjector")
 
 enum TextInjector {
     private static var injectedText = ""
     private static let queue = DispatchQueue(label: "cn.skyrin.yapyap.textinjector")
+
+    /// Check and request Accessibility permission.
+    static func checkAccessibility() -> Bool {
+        let trusted = AXIsProcessTrustedWithOptions(
+            [kAXTrustedCheckOptionPrompt.takeUnretainedValue(): true] as CFDictionary
+        )
+        logger.info("Accessibility trusted: \(trusted)")
+        return trusted
+    }
 
     /// Reset state at the beginning of a recording session.
     static func reset() {
@@ -23,6 +35,8 @@ enum TextInjector {
 
             if charsToDelete == 0 && newChars.isEmpty { return }
 
+            logger.info("Injecting: delete=\(charsToDelete), insert=\"\(newChars)\" (old=\"\(oldText)\" -> new=\"\(fullText)\")")
+
             // Delete divergent old characters
             if charsToDelete > 0 {
                 sendBackspaces(count: charsToDelete)
@@ -41,8 +55,10 @@ enum TextInjector {
         let source = CGEventSource(stateID: .hidSystemState)
         for _ in 0..<count {
             let keyDown = CGEvent(keyboardEventSource: source, virtualKey: UInt16(kVK_Delete), keyDown: true)
+            keyDown?.flags = []  // Clear all modifiers (fn key held during recording)
             keyDown?.post(tap: .cghidEventTap)
             let keyUp = CGEvent(keyboardEventSource: source, virtualKey: UInt16(kVK_Delete), keyDown: false)
+            keyUp?.flags = []
             keyUp?.post(tap: .cghidEventTap)
         }
     }
@@ -60,9 +76,11 @@ enum TextInjector {
 
             let keyDown = CGEvent(keyboardEventSource: source, virtualKey: 0, keyDown: true)
             keyDown?.keyboardSetUnicodeString(stringLength: chunk.count, unicodeString: &chunk)
+            keyDown?.flags = []  // Clear all modifiers (fn key held during recording)
             keyDown?.post(tap: .cghidEventTap)
 
             let keyUp = CGEvent(keyboardEventSource: source, virtualKey: 0, keyDown: false)
+            keyUp?.flags = []
             keyUp?.post(tap: .cghidEventTap)
         }
     }

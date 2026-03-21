@@ -73,6 +73,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             return
         }
 
+        if !TextInjector.checkAccessibility() {
+            return
+        }
+
         TextInjector.reset()
 
         DispatchQueue.main.async {
