@@ -1,0 +1,18 @@
+# Secrets
+*.local.md
+
+# Xcode
+xcuserdata/
+*.xcodeproj/xcuserdata/
+*.xcodeproj/project.xcworkspace/xcuserdata/
+*.xcodeproj/project.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist
+DerivedData/
+
+# Build artifacts
+build/
+*.app
+
+# macOS
+.DS_Store
+*.swp
+*~

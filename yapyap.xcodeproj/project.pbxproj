@@ -1,0 +1,328 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0BE64561FFFA12B91BE17D6F /* AudioEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30F0F85D62EA9D1962EB6C99 /* AudioEngine.swift */; };
+		345410B1DFC3F963A8CAD8A5 /* App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E3FF9BE4023CDF2721086E9 /* App.swift */; };
+		3483F8A0604A31A42F574938 /* TextInjector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52B0BFD0EABFB723816C87B5 /* TextInjector.swift */; };
+		973A8F97F8F4D65FBE2BDDC0 /* KeyMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 959FBD13DCAB2732250D480A /* KeyMonitor.swift */; };
+		9B8F341DBE6F62081F7EEF0D /* OverlayWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BE3935D1F280E62F01B78CB /* OverlayWindow.swift */; };
+		BA526C4531AEAAC821656054 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 710DDCD36DDB21123243F33D /* SettingsView.swift */; };
+		BED19BE3FB8E8BC8024EF312 /* SettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F122D7DBD16D89B70DFBAA73 /* SettingsStore.swift */; };
+		F2166F3510E0E89A2A4E3071 /* ASRClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AF5C67BF95B1B58BEF6F7F9 /* ASRClient.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		1BE3935D1F280E62F01B78CB /* OverlayWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayWindow.swift; sourceTree = "<group>"; };
+		30F0F85D62EA9D1962EB6C99 /* AudioEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioEngine.swift; sourceTree = "<group>"; };
+		3AF5C67BF95B1B58BEF6F7F9 /* ASRClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ASRClient.swift; sourceTree = "<group>"; };
+		3E3FF9BE4023CDF2721086E9 /* App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App.swift; sourceTree = "<group>"; };
+		52B0BFD0EABFB723816C87B5 /* TextInjector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextInjector.swift; sourceTree = "<group>"; };
+		710DDCD36DDB21123243F33D /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		959FBD13DCAB2732250D480A /* KeyMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyMonitor.swift; sourceTree = "<group>"; };
+		CFB103102A3815782322312C /* yapyap.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = yapyap.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		DAF3FADD43C22010931BBB37 /* yapyap.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = yapyap.entitlements; sourceTree = "<group>"; };
+		F122D7DBD16D89B70DFBAA73 /* SettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsStore.swift; sourceTree = "<group>"; };
+		F6A18FDC4769A1B9C1A9ED1B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		6B4424B342CFA2D865BD7E95 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				F6A18FDC4769A1B9C1A9ED1B /* Info.plist */,
+				DAF3FADD43C22010931BBB37 /* yapyap.entitlements */,
+			);
+			name = Resources;
+			path = yapyap/Resources;
+			sourceTree = "<group>";
+		};
+		D8975A4E5B6F4B575B40DE54 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				3E3FF9BE4023CDF2721086E9 /* App.swift */,
+				3AF5C67BF95B1B58BEF6F7F9 /* ASRClient.swift */,
+				30F0F85D62EA9D1962EB6C99 /* AudioEngine.swift */,
+				959FBD13DCAB2732250D480A /* KeyMonitor.swift */,
+				1BE3935D1F280E62F01B78CB /* OverlayWindow.swift */,
+				F122D7DBD16D89B70DFBAA73 /* SettingsStore.swift */,
+				710DDCD36DDB21123243F33D /* SettingsView.swift */,
+				52B0BFD0EABFB723816C87B5 /* TextInjector.swift */,
+			);
+			name = Sources;
+			path = yapyap/Sources;
+			sourceTree = "<group>";
+		};
+		DC24BA5B51EA197D0706DACD = {
+			isa = PBXGroup;
+			children = (
+				6B4424B342CFA2D865BD7E95 /* Resources */,
+				D8975A4E5B6F4B575B40DE54 /* Sources */,
+				ECF1BC7CB6AF3D0BAA35EB0B /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		ECF1BC7CB6AF3D0BAA35EB0B /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				CFB103102A3815782322312C /* yapyap.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		BB888EC4F0B05D7C3E519A44 /* yapyap */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B88CF2727EF7130E00C34F1B /* Build configuration list for PBXNativeTarget "yapyap" */;
+			buildPhases = (
+				8CCFD412CED78B6927673BAF /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = yapyap;
+			packageProductDependencies = (
+			);
+			productName = yapyap;
+			productReference = CFB103102A3815782322312C /* yapyap.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		BAD15110BAC6D70F311B1374 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1600;
+				TargetAttributes = {
+				};
+			};
+			buildConfigurationList = 2E6FD47CA1FD140C34532266 /* Build configuration list for PBXProject "yapyap" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = DC24BA5B51EA197D0706DACD;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = ECF1BC7CB6AF3D0BAA35EB0B /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				BB888EC4F0B05D7C3E519A44 /* yapyap */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		8CCFD412CED78B6927673BAF /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F2166F3510E0E89A2A4E3071 /* ASRClient.swift in Sources */,
+				345410B1DFC3F963A8CAD8A5 /* App.swift in Sources */,
+				0BE64561FFFA12B91BE17D6F /* AudioEngine.swift in Sources */,
+				973A8F97F8F4D65FBE2BDDC0 /* KeyMonitor.swift in Sources */,
+				9B8F341DBE6F62081F7EEF0D /* OverlayWindow.swift in Sources */,
+				BED19BE3FB8E8BC8024EF312 /* SettingsStore.swift in Sources */,
+				BA526C4531AEAAC821656054 /* SettingsView.swift in Sources */,
+				3483F8A0604A31A42F574938 /* TextInjector.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		2DAAC2CE3E2FD3E11B538CF5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = yapyap/Resources/yapyap.entitlements;
+				CODE_SIGN_IDENTITY = "-";
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = yapyap/Resources/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = cn.skyrin.yapyap;
+				PRODUCT_NAME = yapyap;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		A0F5397330D3B3CB8C42944C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = arm64;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.10;
+			};
+			name = Release;
+		};
+		A58CB344CB5910F67C3771D4 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = yapyap/Resources/yapyap.entitlements;
+				CODE_SIGN_IDENTITY = "-";
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = yapyap/Resources/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = cn.skyrin.yapyap;
+				PRODUCT_NAME = yapyap;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		F20A7F470B697D68127C9B23 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = arm64;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.10;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		2E6FD47CA1FD140C34532266 /* Build configuration list for PBXProject "yapyap" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F20A7F470B697D68127C9B23 /* Debug */,
+				A0F5397330D3B3CB8C42944C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		B88CF2727EF7130E00C34F1B /* Build configuration list for PBXNativeTarget "yapyap" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2DAAC2CE3E2FD3E11B538CF5 /* Debug */,
+				A58CB344CB5910F67C3771D4 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = BAD15110BAC6D70F311B1374 /* Project object */;
+}
