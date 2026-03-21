@@ -1,4 +1,5 @@
 import SwiftUI
+import AppKit
 import Combine
 
 @main
@@ -18,6 +19,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var audioEngine: AudioEngine!
     private var asrClient: ASRClient!
     private var overlayWindow: OverlayWindow!
+    private var settingsWindow: NSWindow?
     private var cancellables = Set<AnyCancellable>()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -128,7 +130,22 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc private func openSettings() {
-        NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
+        if let window = settingsWindow {
+            window.makeKeyAndOrderFront(nil)
+        } else {
+            let window = NSWindow(
+                contentRect: NSRect(x: 0, y: 0, width: 420, height: 320),
+                styleMask: [.titled, .closable],
+                backing: .buffered,
+                defer: false
+            )
+            window.title = "yapyap Settings"
+            window.contentView = NSHostingView(rootView: SettingsView())
+            window.center()
+            window.isReleasedWhenClosed = false
+            window.makeKeyAndOrderFront(nil)
+            settingsWindow = window
+        }
         NSApp.activate(ignoringOtherApps: true)
     }
 

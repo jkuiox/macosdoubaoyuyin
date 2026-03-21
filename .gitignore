@@ -8,6 +8,9 @@ xcuserdata/
 *.xcodeproj/project.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist
 DerivedData/
 
+# refer
+refer/
+
 # Build artifacts
 build/
 *.app
