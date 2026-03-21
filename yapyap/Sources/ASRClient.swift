@@ -11,6 +11,7 @@ class ASRClient {
     private var session: URLSession?
     private let settings = SettingsStore.shared
     private var seq: Int32 = 1
+    private var isDisconnecting = false
 
     // Binary protocol constants (matching Python reference)
     private static let protocolVersion: UInt8 = 0b0001
@@ -30,6 +31,7 @@ class ASRClient {
 
     func connect() {
         seq = 1
+        isDisconnecting = false
 
         guard let url = URL(string: "wss://openspeech.bytedance.com/api/v3/sauc/bigmodel") else {
             logger.error("Invalid WebSocket URL")
@@ -55,6 +57,7 @@ class ASRClient {
     }
 
     func disconnect() {
+        isDisconnecting = true
         logger.info("Disconnecting")
         webSocketTask?.cancel(with: .normalClosure, reason: nil)
         webSocketTask = nil
@@ -200,7 +203,9 @@ class ASRClient {
                 self.receiveLoop()
 
             case .failure(let error):
-                logger.error("WebSocket receive error: \(error.localizedDescription)")
+                if !self.isDisconnecting {
+                    logger.error("WebSocket receive error: \(error.localizedDescription)")
+                }
             }
         }
     }
@@ -364,7 +369,6 @@ class ASRClient {
         request.setValue(appKey, forHTTPHeaderField: "X-Api-App-Key")
         request.setValue(accessKey, forHTTPHeaderField: "X-Api-Access-Key")
         request.setValue(resourceId, forHTTPHeaderField: "X-Api-Resource-Id")
-        // Python reference uses X-Api-Connect-Id (not X-Api-Connect-Id)
         let connectId = UUID().uuidString
         request.setValue(connectId, forHTTPHeaderField: "X-Api-Connect-Id")
         logger.info("[Test] connectId=\(connectId)")

@@ -31,7 +31,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private func setupStatusItem() {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         if let button = statusItem.button {
-            button.image = NSImage(systemSymbolName: "mic.badge.xmark", accessibilityDescription: "yapyap")
+            button.image = NSImage(systemSymbolName: "mic", accessibilityDescription: "yapyap")
         }
 
         let menu = NSMenu()
@@ -113,7 +113,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         DispatchQueue.main.async {
             if let button = self.statusItem.button {
-                button.image = NSImage(systemSymbolName: "mic.badge.xmark", accessibilityDescription: "yapyap")
+                button.image = NSImage(systemSymbolName: "mic", accessibilityDescription: "yapyap")
             }
             self.overlayWindow.hide()
         }
