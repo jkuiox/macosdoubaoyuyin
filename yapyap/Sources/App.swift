@@ -104,18 +104,23 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func stopRecording() {
-        audioEngine.stop()
-        asrClient.sendLastAudio()
-
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
-            self?.asrClient.disconnect()
-        }
-
         DispatchQueue.main.async {
             if let button = self.statusItem.button {
                 button.image = NSImage(systemSymbolName: "mic", accessibilityDescription: "yapyap")
             }
             self.overlayWindow.hide()
+        }
+
+        // Delay 0.5s before stopping audio to capture trailing speech
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+            guard let self else { return }
+            self.audioEngine.stop()
+            self.asrClient.sendLastAudio()
+
+            // Give the server time to process the final audio before disconnecting
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+                self?.asrClient.disconnect()
+            }
         }
     }
 
