@@ -7,7 +7,18 @@ enum TextProcessor {
         let settings = SettingsStore.shared
         var result = text
 
-        // Punctuation processing
+        // 1. English/number spacing — runs on original text while punctuation is
+        //    still intact, so the spacing logic only sees real ASR spaces and won't
+        //    accidentally remove spaces that came from punctuation replacement.
+        switch settings.englishSpacingMode {
+        case .noSpaces:
+            result = removeSpacesAroundNonCJK(result)
+        case .addSpaces:
+            result = addSpacesAroundNonCJK(result)
+        }
+
+        // 2. Punctuation processing — runs after spacing, so any space produced
+        //    by replacement is final and won't be touched by spacing logic.
         switch settings.punctuationMode {
         case .spaceReplace:
             result = replacePunctuationWithSpaces(result)
@@ -17,13 +28,9 @@ enum TextProcessor {
             break
         }
 
-        // English/number spacing
-        switch settings.englishSpacingMode {
-        case .noSpaces:
-            result = removeSpacesAroundNonCJK(result)
-        case .addSpaces:
-            result = addSpacesAroundNonCJK(result)
-        }
+        // 3. Clean up leading/trailing whitespace
+        while result.first == " " { result.removeFirst() }
+        while result.last == " " { result.removeLast() }
 
         return result
     }
