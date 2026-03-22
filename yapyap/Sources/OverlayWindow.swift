@@ -6,16 +6,17 @@ class OverlayWindow {
 
     func show() {
         guard window == nil else { return }
-
-        let size: CGFloat = 64
         guard let screen = NSScreen.main else { return }
+
+        let capsuleWidth: CGFloat = 180
+        let capsuleHeight: CGFloat = 44
 
         // Position: centered horizontally, just above the dock
         let dockHeight: CGFloat = 80
-        let x = (screen.frame.width - size) / 2
+        let x = (screen.frame.width - capsuleWidth) / 2
         let y = dockHeight
 
-        let frame = NSRect(x: x, y: y, width: size, height: size)
+        let frame = NSRect(x: x, y: y, width: capsuleWidth, height: capsuleHeight)
         let win = NSWindow(contentRect: frame,
                            styleMask: .borderless,
                            backing: .buffered,
@@ -27,95 +28,132 @@ class OverlayWindow {
         win.ignoresMouseEvents = true
         win.collectionBehavior = [.canJoinAllSpaces, .stationary, .fullScreenAuxiliary]
 
-        let view = MicIndicatorView(frame: NSRect(x: 0, y: 0, width: size, height: size))
+        let view = MicIndicatorView(frame: NSRect(x: 0, y: 0, width: capsuleWidth, height: capsuleHeight))
         win.contentView = view
         self.micView = view
         self.window = win
 
+        // Enter animation: scale from 0 to 1
+        win.alphaValue = 0
         win.orderFrontRegardless()
+        view.startAnimation()
+
+        NSAnimationContext.runAnimationGroup { ctx in
+            ctx.duration = 0.3
+            ctx.timingFunction = CAMediaTimingFunction(name: .easeOut)
+            win.animator().alphaValue = 1
+        }
     }
 
     func hide() {
-        window?.orderOut(nil)
-        window = nil
-        micView = nil
+        guard let win = window else { return }
+        micView?.stopAnimation()
+
+        NSAnimationContext.runAnimationGroup({ ctx in
+            ctx.duration = 0.2
+            ctx.timingFunction = CAMediaTimingFunction(name: .easeIn)
+            win.animator().alphaValue = 0
+        }, completionHandler: { [weak self] in
+            win.orderOut(nil)
+            self?.window = nil
+            self?.micView = nil
+        })
     }
 
     func updateLevel(_ level: Float) {
-        micView?.audioLevel = CGFloat(level)
+        // Audio level not used by the new wave animation design
     }
 }
 
 class MicIndicatorView: NSView {
-    var audioLevel: CGFloat = 0 {
-        didSet { needsDisplay = true }
+    // MARK: - Constants
+    private let barCount = 7
+    private let barWidth: CGFloat = 3
+    private let barGap: CGFloat = 2.5
+    private let barRadius: CGFloat = 1.5
+    private let minHeight: CGFloat = 5
+    private let maxHeight: CGFloat = 22
+    private let barColor = NSColor(calibratedRed: 180/255, green: 180/255, blue: 180/255, alpha: 0.70)
+    private let labelColor = NSColor(calibratedRed: 180/255, green: 180/255, blue: 180/255, alpha: 0.75)
+    private let capsuleBackground = NSColor(calibratedRed: 30/255, green: 30/255, blue: 30/255, alpha: 0.92)
+    private let paddingLeft: CGFloat = 16
+    private let paddingRight: CGFloat = 20
+    private let barsLabelGap: CGFloat = 12
+
+    // MARK: - State
+    private var tick: Int = 0
+    private var timer: Timer?
+    var audioLevel: CGFloat = 0 // kept for API compatibility
+
+    // MARK: - Lifecycle
+
+    func startAnimation() {
+        tick = 0
+        timer = Timer.scheduledTimer(withTimeInterval: 0.13, repeats: true) { [weak self] _ in
+            guard let self else { return }
+            self.tick += 1
+            self.needsDisplay = true
+        }
     }
+
+    func stopAnimation() {
+        timer?.invalidate()
+        timer = nil
+    }
+
+    // MARK: - Drawing
 
     override func draw(_ dirtyRect: NSRect) {
         super.draw(dirtyRect)
-
         guard let context = NSGraphicsContext.current?.cgContext else { return }
 
-        let center = CGPoint(x: bounds.midX, y: bounds.midY)
-        let baseRadius: CGFloat = 20
-        let pulseRadius = baseRadius + audioLevel * 10
+        // Draw capsule background
+        let capsulePath = NSBezierPath(roundedRect: bounds, xRadius: bounds.height / 2, yRadius: bounds.height / 2)
+        capsuleBackground.setFill()
+        capsulePath.fill()
 
-        // Glow ring
-        let glowAlpha = 0.2 + audioLevel * 0.4
-        context.setFillColor(NSColor.systemRed.withAlphaComponent(glowAlpha).cgColor)
-        context.fillEllipse(in: CGRect(
-            x: center.x - pulseRadius - 4,
-            y: center.y - pulseRadius - 4,
-            width: (pulseRadius + 4) * 2,
-            height: (pulseRadius + 4) * 2
-        ))
+        // Draw bars
+        let barsGroupWidth = CGFloat(barCount) * barWidth + CGFloat(barCount - 1) * barGap
+        let barsStartX = paddingLeft
 
-        // Main circle
-        let circleAlpha = 0.8 + audioLevel * 0.2
-        context.setFillColor(NSColor.systemRed.withAlphaComponent(circleAlpha).cgColor)
-        context.fillEllipse(in: CGRect(
-            x: center.x - baseRadius,
-            y: center.y - baseRadius,
-            width: baseRadius * 2,
-            height: baseRadius * 2
-        ))
+        for i in 0..<barCount {
+            let h = computeBarHeight(index: i, t: tick)
+            let x = barsStartX + CGFloat(i) * (barWidth + barGap)
+            let y = (bounds.height - h) / 2
 
-        // Mic icon (simplified)
-        let iconColor = NSColor.white
-        iconColor.setFill()
+            let barRect = CGRect(x: x, y: y, width: barWidth, height: h)
+            let barPath = NSBezierPath(roundedRect: barRect, xRadius: barRadius, yRadius: barRadius)
+            barColor.setFill()
+            barPath.fill()
+        }
 
-        // Mic body
-        let micWidth: CGFloat = 8
-        let micHeight: CGFloat = 14
-        let micRect = CGRect(
-            x: center.x - micWidth / 2,
-            y: center.y - 2,
-            width: micWidth,
-            height: micHeight
-        )
-        let micPath = NSBezierPath(roundedRect: micRect, xRadius: micWidth / 2, yRadius: micWidth / 2)
-        micPath.fill()
+        // Draw label
+        let labelX = barsStartX + barsGroupWidth + barsLabelGap
+        let labelText = L10n.listening
+        let attrs: [NSAttributedString.Key: Any] = [
+            .font: NSFont.systemFont(ofSize: 14),
+            .foregroundColor: labelColor,
+            .kern: 0.5
+        ]
+        let attrStr = NSAttributedString(string: labelText, attributes: attrs)
+        let textSize = attrStr.size()
+        let textY = (bounds.height - textSize.height) / 2
+        attrStr.draw(at: NSPoint(x: labelX, y: textY))
+    }
 
-        // Mic arc
-        let arcPath = NSBezierPath()
-        arcPath.lineWidth = 2
-        iconColor.setStroke()
-        let arcRadius: CGFloat = 7
-        arcPath.appendArc(
-            withCenter: CGPoint(x: center.x, y: center.y + micHeight / 2 - 2),
-            radius: arcRadius,
-            startAngle: 200,
-            endAngle: 340
-        )
-        arcPath.stroke()
+    // MARK: - Wave computation
 
-        // Mic stand
-        let standPath = NSBezierPath()
-        standPath.lineWidth = 2
-        standPath.move(to: CGPoint(x: center.x, y: center.y - 4))
-        standPath.line(to: CGPoint(x: center.x, y: center.y - 8))
-        standPath.move(to: CGPoint(x: center.x - 4, y: center.y - 8))
-        standPath.line(to: CGPoint(x: center.x + 4, y: center.y - 8))
-        standPath.stroke()
+    private func computeBarHeight(index i: Int, t: Int) -> CGFloat {
+        let center = Double(barCount - 1) / 2.0
+        let dist = abs(Double(i) - center) / center
+        let base = 0.35 + 0.65 * (1.0 - dist * dist)
+
+        let phase = Double(i) * 0.9 + Double(t) * 0.08
+        let osc = sin(phase) * 0.3
+            + sin(phase * 1.7 + 0.5) * 0.2
+            + sin(phase * 0.6 + 2.1) * 0.15
+
+        let value = max(0.15, min(1.0, base * (0.5 + osc)))
+        return minHeight + CGFloat(value) * (maxHeight - minHeight)
     }
 }

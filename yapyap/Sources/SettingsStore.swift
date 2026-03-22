@@ -42,6 +42,7 @@ enum L10n {
     static var resourceConcurrent10: String { lang == .zh ? "1.0 并发版" : "1.0 Concurrent" }
     static var languageHeader: String { lang == .zh ? "语言" : "Language" }
     static var getKey: String { lang == .zh ? "获取 Key" : "Get Key" }
+    static var listening: String { lang == .zh ? "正在倾听" : "Listening" }
 }
 
 enum PunctuationMode: String, CaseIterable {
