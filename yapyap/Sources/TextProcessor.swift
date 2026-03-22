@@ -36,10 +36,18 @@ enum TextProcessor {
     }
 
     private static func replacePunctuationWithSpaces(_ text: String) -> String {
+        let chars = Array(text)
         var result = ""
-        for char in text {
+        for (i, char) in chars.enumerated() {
             if char.unicodeScalars.allSatisfy({ punctuationChars.contains($0) }) {
-                result.append(" ")
+                // Keep ASCII dot/comma between digits (e.g. 3.5, 1,000)
+                if (char == "." || char == ","),
+                   i > 0, i + 1 < chars.count,
+                   chars[i - 1].isNumber, chars[i + 1].isNumber {
+                    result.append(char)
+                } else {
+                    result.append(" ")
+                }
             } else {
                 result.append(char)
             }
@@ -57,8 +65,13 @@ enum TextProcessor {
         return result
     }
 
+    private static let asciiPunctuation = CharacterSet(charactersIn: ",.!?;:")
+
     private static func isCJK(_ scalar: Unicode.Scalar) -> Bool {
         let v = scalar.value
+        // ASCII punctuation (.,!?;:) is NOT treated as CJK so that
+        // characters like "." in "3.5" don't create false CJK/non-CJK boundaries.
+        if asciiPunctuation.contains(scalar) { return false }
         return (v >= 0x4E00 && v <= 0x9FFF)    // CJK Unified
             || (v >= 0x3400 && v <= 0x4DBF)    // CJK Extension A
             || (v >= 0x3000 && v <= 0x303F)    // CJK Symbols
