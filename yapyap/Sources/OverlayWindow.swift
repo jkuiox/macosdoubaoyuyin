@@ -8,11 +8,21 @@ class OverlayWindow {
         guard window == nil else { return }
         guard let screen = NSScreen.main else { return }
 
-        let capsuleWidth: CGFloat = 180
         let capsuleHeight: CGFloat = 44
 
+        // Compute capsule width from content
+        let padding: CGFloat = 18
+        let barCount: CGFloat = 7
+        let barWidth: CGFloat = 3
+        let barGap: CGFloat = 2.5
+        let barsLabelGap: CGFloat = 12
+        let barsGroupWidth = barCount * barWidth + (barCount - 1) * barGap
+        let labelText = L10n.listening
+        let labelWidth = (labelText as NSString).size(withAttributes: [.font: NSFont.systemFont(ofSize: 14), .kern: 0.5]).width
+        let capsuleWidth = padding + barsGroupWidth + barsLabelGap + labelWidth + padding
+
         // Position: centered horizontally, just above the dock
-        let dockHeight: CGFloat = 80
+        let dockHeight: CGFloat = 120
         let x = (screen.frame.width - capsuleWidth) / 2
         let y = dockHeight
 
@@ -76,8 +86,8 @@ class MicIndicatorView: NSView {
     private let barColor = NSColor(calibratedRed: 180/255, green: 180/255, blue: 180/255, alpha: 0.70)
     private let labelColor = NSColor(calibratedRed: 180/255, green: 180/255, blue: 180/255, alpha: 0.75)
     private let capsuleBackground = NSColor(calibratedRed: 30/255, green: 30/255, blue: 30/255, alpha: 0.92)
-    private let paddingLeft: CGFloat = 16
-    private let paddingRight: CGFloat = 20
+    private let paddingLeft: CGFloat = 18
+    private let paddingRight: CGFloat = 18
     private let barsLabelGap: CGFloat = 12
 
     // MARK: - State
