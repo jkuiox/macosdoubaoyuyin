@@ -53,6 +53,12 @@ enum TextInjector {
                 sendBackspaces(count: charsToDelete)
             }
 
+            // Small delay between delete and insert so terminal TUI apps
+            // can finish processing backspaces before new text arrives.
+            if charsToDelete > 0 && !newChars.isEmpty {
+                usleep(10_000) // 10ms
+            }
+
             // Type new characters
             if !newChars.isEmpty {
                 sendText(newChars)
@@ -71,6 +77,7 @@ enum TextInjector {
             let keyUp = CGEvent(keyboardEventSource: source, virtualKey: UInt16(kVK_Delete), keyDown: false)
             keyUp?.flags = []
             keyUp?.post(tap: .cghidEventTap)
+            usleep(2_000) // 2ms between backspaces for TUI compatibility
         }
     }
 
