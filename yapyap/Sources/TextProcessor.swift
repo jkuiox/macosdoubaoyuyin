@@ -11,6 +11,8 @@ enum TextProcessor {
         //    still intact, so the spacing logic only sees real ASR spaces and won't
         //    accidentally remove spaces that came from punctuation replacement.
         switch settings.englishSpacingMode {
+        case .keepOriginal:
+            break
         case .noSpaces:
             result = removeSpacesAroundNonCJK(result)
         case .addSpaces:
@@ -20,6 +22,8 @@ enum TextProcessor {
         // 2. Punctuation processing — runs after spacing, so any space produced
         //    by replacement is final and won't be touched by spacing logic.
         switch settings.punctuationMode {
+        case .keepOriginal:
+            break
         case .spaceReplace:
             result = replacePunctuationWithSpaces(result)
         case .removeTrailing:

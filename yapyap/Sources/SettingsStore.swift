@@ -43,15 +43,18 @@ enum L10n {
     static var languageHeader: String { lang == .zh ? "语言" : "Language" }
     static var getKey: String { lang == .zh ? "获取 Key" : "Get Key" }
     static var listening: String { lang == .zh ? "正在倾听" : "Listening" }
+    static var keepOriginal: String { lang == .zh ? "保持原样" : "Keep original" }
 }
 
 enum PunctuationMode: String, CaseIterable {
+    case keepOriginal = "keepOriginal"
     case spaceReplace = "spaceReplace"
     case removeTrailing = "removeTrailing"
     case keepAll = "keepAll"
 }
 
 enum EnglishSpacingMode: String, CaseIterable {
+    case keepOriginal = "keepOriginal"
     case noSpaces = "noSpaces"
     case addSpaces = "addSpaces"
 }

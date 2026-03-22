@@ -97,6 +97,7 @@ struct SettingsView: View {
 
             Section {
                 Picker("", selection: $store.punctuationMode) {
+                    Text(L10n.keepOriginal).tag(PunctuationMode.keepOriginal)
                     Text(L10n.punctSpaceReplace).tag(PunctuationMode.spaceReplace)
                     Text(L10n.punctRemoveTrailing).tag(PunctuationMode.removeTrailing)
                     Text(L10n.punctKeepAll).tag(PunctuationMode.keepAll)
@@ -109,6 +110,7 @@ struct SettingsView: View {
 
             Section {
                 Picker("", selection: $store.englishSpacingMode) {
+                    Text(L10n.keepOriginal).tag(EnglishSpacingMode.keepOriginal)
                     Text(L10n.spacingNone).tag(EnglishSpacingMode.noSpaces)
                     Text(L10n.spacingAdd).tag(EnglishSpacingMode.addSpaces)
                 }
