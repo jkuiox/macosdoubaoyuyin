@@ -100,6 +100,10 @@ enum TextProcessor {
         return result
     }
 
+    private static func isPunctuation(_ char: Character) -> Bool {
+        char.unicodeScalars.allSatisfy { punctuationChars.contains($0) }
+    }
+
     private static func addSpacesAroundNonCJK(_ text: String) -> String {
         let chars = Array(text)
         var result = ""
@@ -108,8 +112,10 @@ enum TextProcessor {
                 let prev = chars[i - 1]
                 let prevIsCJK = prev.unicodeScalars.contains(where: isCJK) && prev != " "
                 let currIsCJK = char.unicodeScalars.contains(where: isCJK) && char != " "
-                // Add space at CJK ↔ non-CJK boundary (skip if already a space)
-                if prevIsCJK != currIsCJK && prev != " " && char != " " {
+                // Add space at CJK ↔ non-CJK boundary, but skip if
+                // either side is punctuation (e.g. "验证码，258407")
+                if prevIsCJK != currIsCJK && prev != " " && char != " "
+                    && !isPunctuation(prev) && !isPunctuation(char) {
                     result.append(" ")
                 }
             }
