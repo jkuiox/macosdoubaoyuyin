@@ -1,9 +1,18 @@
 import SwiftUI
+import AVFoundation
 
 struct SettingsView: View {
     @ObservedObject private var store = SettingsStore.shared
     @State private var showAccessKey = false
     @State private var testState: TestState = .idle
+    @State private var micAuthorized = false
+    @State private var accessibilityAuthorized = false
+
+    /// When true, shows "Launch App" button and disables it until permissions are granted.
+    var isStartup: Bool = false
+    var onLaunch: (() -> Void)?
+
+    private let permissionTimer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     enum TestState {
         case idle
@@ -12,8 +21,50 @@ struct SettingsView: View {
         case failure(String)
     }
 
+    private var allPermissionsGranted: Bool {
+        micAuthorized && accessibilityAuthorized
+    }
+
     var body: some View {
         Form {
+            // Permissions section
+            Section {
+                permissionRow(
+                    name: L10n.micPermission,
+                    description: L10n.micDescription,
+                    granted: micAuthorized,
+                    action: openMicrophoneSettings
+                )
+
+                permissionRow(
+                    name: L10n.accessibilityPermission,
+                    description: L10n.accessibilityDescription,
+                    granted: accessibilityAuthorized,
+                    action: openAccessibilitySettings
+                )
+
+                Toggle(L10n.showMenuBarIcon, isOn: $store.showMenuBar)
+                    .toggleStyle(.checkbox)
+
+                // Launch button (startup mode only)
+                if isStartup {
+                    HStack {
+                        Spacer()
+                        Button(action: { onLaunch?() }) {
+                            Text(L10n.launchApp)
+                                .frame(minWidth: 120)
+                        }
+                        .controlSize(.large)
+                        .keyboardShortcut(.defaultAction)
+                        .disabled(!allPermissionsGranted)
+                        Spacer()
+                    }
+                }
+            } header: {
+                Text(L10n.permissionsHeader)
+            }
+
+            // ASR API section
             Section {
                 LabeledContent("App Key") {
                     TextField("", text: $store.appKey)
@@ -95,6 +146,7 @@ struct SettingsView: View {
                 }
             }
 
+            // Text processing sections
             Section {
                 Picker("", selection: $store.punctuationMode) {
                     Text(L10n.keepOriginal).tag(PunctuationMode.keepOriginal)
@@ -143,10 +195,79 @@ struct SettingsView: View {
             } header: {
                 Text(L10n.usageHeader)
             }
+
         }
         .formStyle(.grouped)
-        .frame(width: 420, height: 580)
+        .frame(width: 420, height: isStartup ? 700 : 640)
+        .onAppear { checkPermissions() }
+        .onReceive(permissionTimer) { _ in checkPermissions() }
     }
+
+    // MARK: - Permission rows
+
+    private func permissionRow(name: String, description: String, granted: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(alignment: .top, spacing: 12) {
+                Image(systemName: granted ? "checkmark.circle.fill" : "xmark.circle.fill")
+                    .font(.title2)
+                    .foregroundColor(granted ? .green : .red)
+                    .frame(width: 24)
+                    .padding(.top, 2)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(name)
+                        .font(.body.weight(.medium))
+                        .foregroundColor(.primary)
+                    Text(granted ? L10n.permissionGranted : L10n.permissionNotGranted)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    Text(description)
+                        .font(.caption)
+                        .foregroundStyle(.tertiary)
+                }
+
+                Spacer()
+
+                if !granted {
+                    Image(systemName: "arrow.up.forward.square")
+                        .foregroundColor(.secondary)
+                        .padding(.top, 2)
+                }
+            }
+            .padding(6)
+            .background(
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(granted ? Color.green.opacity(0.06) : Color.red.opacity(0.06))
+            )
+        }
+        .buttonStyle(.plain)
+    }
+
+    // MARK: - Permissions
+
+    private func checkPermissions() {
+        micAuthorized = AVCaptureDevice.authorizationStatus(for: .audio) == .authorized
+        accessibilityAuthorized = AXIsProcessTrusted()
+    }
+
+    private func openMicrophoneSettings() {
+        if AVCaptureDevice.authorizationStatus(for: .audio) == .notDetermined {
+            AVCaptureDevice.requestAccess(for: .audio) { granted in
+                DispatchQueue.main.async {
+                    self.micAuthorized = granted
+                }
+            }
+        }
+        NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Microphone")!)
+    }
+
+    private func openAccessibilitySettings() {
+        let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue(): true] as CFDictionary
+        AXIsProcessTrustedWithOptions(options)
+        NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!)
+    }
+
+    // MARK: - Test connection
 
     private var isTestRunning: Bool {
         if case .testing = testState { return true }

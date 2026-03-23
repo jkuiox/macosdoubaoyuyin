@@ -32,7 +32,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     private var startupLaunched = false
 
     private func showStartupDialog() {
-        let dialog = StartupDialog { [weak self] in
+        let dialog = SettingsView(isStartup: true) { [weak self] in
             guard let self else { return }
             self.startupLaunched = true
             self.startupWindow?.close()
@@ -42,12 +42,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             self.setupBindings()
         }
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 400, height: 350),
+            contentRect: NSRect(x: 0, y: 0, width: 420, height: 700),
             styleMask: [.titled, .closable],
             backing: .buffered,
             defer: false
         )
-        window.title = "yapyap"
+        window.title = "yapyap Settings"
         window.contentView = NSHostingView(rootView: dialog)
         window.center()
         window.isReleasedWhenClosed = false

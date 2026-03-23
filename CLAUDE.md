@@ -18,7 +18,6 @@ This script builds the app bundle (via `bundle.sh` which runs `xcodegen` + `xcod
   - `App.swift` — Entry point (`@main`, `AppDelegate`)
   - `SettingsView.swift` — API config settings (SwiftUI)
   - `SettingsStore.swift` — Settings persistence, L10n strings
-  - `StartupDialog.swift` — Startup permissions dialog (SwiftUI)
   - `KeyMonitor.swift` — fn key detection
   - `AudioEngine.swift` — Microphone capture
   - `ASRClient.swift` — WebSocket ASR client (Doubao)

@@ -12,7 +12,6 @@
 		3483F8A0604A31A42F574938 /* TextInjector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52B0BFD0EABFB723816C87B5 /* TextInjector.swift */; };
 		973A8F97F8F4D65FBE2BDDC0 /* KeyMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 959FBD13DCAB2732250D480A /* KeyMonitor.swift */; };
 		9B8F341DBE6F62081F7EEF0D /* OverlayWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BE3935D1F280E62F01B78CB /* OverlayWindow.swift */; };
-		AA99BDA6FD8539EA6E67BC1D /* StartupDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1219394598CD41D0B69A644A /* StartupDialog.swift */; };
 		BA526C4531AEAAC821656054 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 710DDCD36DDB21123243F33D /* SettingsView.swift */; };
 		BED19BE3FB8E8BC8024EF312 /* SettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F122D7DBD16D89B70DFBAA73 /* SettingsStore.swift */; };
 		ED426A2B03CEEA4EB6A44212 /* TextProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = F605C96EF7F32A1F67978EBA /* TextProcessor.swift */; };
@@ -20,7 +19,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		1219394598CD41D0B69A644A /* StartupDialog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartupDialog.swift; sourceTree = "<group>"; };
 		1BE3935D1F280E62F01B78CB /* OverlayWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayWindow.swift; sourceTree = "<group>"; };
 		30F0F85D62EA9D1962EB6C99 /* AudioEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioEngine.swift; sourceTree = "<group>"; };
 		3AF5C67BF95B1B58BEF6F7F9 /* ASRClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ASRClient.swift; sourceTree = "<group>"; };
@@ -56,7 +54,6 @@
 				1BE3935D1F280E62F01B78CB /* OverlayWindow.swift */,
 				F122D7DBD16D89B70DFBAA73 /* SettingsStore.swift */,
 				710DDCD36DDB21123243F33D /* SettingsView.swift */,
-				1219394598CD41D0B69A644A /* StartupDialog.swift */,
 				52B0BFD0EABFB723816C87B5 /* TextInjector.swift */,
 				F605C96EF7F32A1F67978EBA /* TextProcessor.swift */,
 			);
@@ -143,7 +140,6 @@
 				9B8F341DBE6F62081F7EEF0D /* OverlayWindow.swift in Sources */,
 				BED19BE3FB8E8BC8024EF312 /* SettingsStore.swift in Sources */,
 				BA526C4531AEAAC821656054 /* SettingsView.swift in Sources */,
-				AA99BDA6FD8539EA6E67BC1D /* StartupDialog.swift in Sources */,
 				3483F8A0604A31A42F574938 /* TextInjector.swift in Sources */,
 				ED426A2B03CEEA4EB6A44212 /* TextProcessor.swift in Sources */,
 			);
