@@ -44,6 +44,25 @@ enum L10n {
     static var getKey: String { lang == .zh ? "获取 Key" : "Get Key" }
     static var listening: String { lang == .zh ? "正在倾听" : "Listening" }
     static var keepOriginal: String { lang == .zh ? "保持原样" : "Keep original" }
+
+    // Startup dialog
+    static var showMenuBarIcon: String { lang == .zh ? "显示菜单栏图标" : "Show Menu Bar Icon" }
+    static var permissionsHeader: String { lang == .zh ? "所需权限" : "Required Permissions" }
+    static var micPermission: String { lang == .zh ? "麦克风" : "Microphone" }
+    static var micDescription: String {
+        lang == .zh
+            ? "用于捕获语音进行语音转文字"
+            : "Used to capture voice for speech-to-text"
+    }
+    static var accessibilityPermission: String { lang == .zh ? "辅助功能" : "Accessibility" }
+    static var accessibilityDescription: String {
+        lang == .zh
+            ? "用于在光标位置插入识别文字"
+            : "Used to inject recognized text at cursor position"
+    }
+    static var launchApp: String { lang == .zh ? "启动应用" : "Launch App" }
+    static var permissionGranted: String { lang == .zh ? "已授权" : "Granted" }
+    static var permissionNotGranted: String { lang == .zh ? "未授权 — 点击前往设置" : "Not granted — click to open Settings" }
 }
 
 enum PunctuationMode: String, CaseIterable {
@@ -80,6 +99,9 @@ class SettingsStore: ObservableObject {
     @Published var language: AppLanguage {
         didSet { UserDefaults.standard.set(language.rawValue, forKey: "appLanguage") }
     }
+    @Published var showMenuBar: Bool {
+        didSet { UserDefaults.standard.set(showMenuBar, forKey: "showMenuBar") }
+    }
     private init() {
         self.appKey = UserDefaults.standard.string(forKey: "appKey") ?? ""
         self.accessKey = UserDefaults.standard.string(forKey: "accessKey") ?? ""
@@ -87,5 +109,11 @@ class SettingsStore: ObservableObject {
         self.punctuationMode = PunctuationMode(rawValue: UserDefaults.standard.string(forKey: "punctuationMode") ?? "") ?? .removeTrailing
         self.englishSpacingMode = EnglishSpacingMode(rawValue: UserDefaults.standard.string(forKey: "englishSpacingMode") ?? "") ?? .noSpaces
         self.language = AppLanguage(rawValue: UserDefaults.standard.string(forKey: "appLanguage") ?? "") ?? .zh
+        // Default to true if key has never been set
+        if UserDefaults.standard.object(forKey: "showMenuBar") == nil {
+            self.showMenuBar = true
+        } else {
+            self.showMenuBar = UserDefaults.standard.bool(forKey: "showMenuBar")
+        }
     }
 }

@@ -1,5 +1,6 @@
 import SwiftUI
 import AppKit
+import AVFoundation
 import Combine
 
 @main
@@ -13,24 +14,53 @@ struct YapYapApp: App {
     }
 }
 
-class AppDelegate: NSObject, NSApplicationDelegate {
+class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     private var statusItem: NSStatusItem!
     private var keyMonitor: KeyMonitor!
     private var audioEngine: AudioEngine!
     private var asrClient: ASRClient!
     private var overlayWindow: OverlayWindow!
     private var settingsWindow: NSWindow?
+    private var startupWindow: NSWindow?
     private var cancellables = Set<AnyCancellable>()
+    private var showMenuBarCancellable: AnyCancellable?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        setupStatusItem()
-        setupComponents()
-        setupBindings()
+        showStartupDialog()
+    }
+
+    private var startupLaunched = false
+
+    private func showStartupDialog() {
+        let dialog = StartupDialog { [weak self] in
+            guard let self else { return }
+            self.startupLaunched = true
+            self.startupWindow?.close()
+            self.startupWindow = nil
+            self.setupStatusItem()
+            self.setupComponents()
+            self.setupBindings()
+        }
+        let window = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 400, height: 350),
+            styleMask: [.titled, .closable],
+            backing: .buffered,
+            defer: false
+        )
+        window.title = "yapyap"
+        window.contentView = NSHostingView(rootView: dialog)
+        window.center()
+        window.isReleasedWhenClosed = false
+        window.level = .floating
+        window.delegate = self
+        window.makeKeyAndOrderFront(nil)
+        startupWindow = window
+        NSApp.activate(ignoringOtherApps: true)
     }
 
     private func setupStatusItem() {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-        statusItem.isVisible = true
+        statusItem.isVisible = SettingsStore.shared.showMenuBar
         if let button = statusItem.button {
             button.image = NSImage(systemSymbolName: "mic", accessibilityDescription: "yapyap")
         }
@@ -46,6 +76,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         menu.addItem(NSMenuItem.separator())
         menu.addItem(NSMenuItem(title: "Quit yapyap", action: #selector(quitApp), keyEquivalent: "q"))
         statusItem.menu = menu
+
+        // Observe showMenuBar changes to toggle visibility immediately
+        showMenuBarCancellable = SettingsStore.shared.$showMenuBar
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] visible in
+                self?.statusItem.isVisible = visible
+            }
     }
 
     private func setupComponents() {
@@ -158,6 +195,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             settingsWindow = window
         }
         NSApp.activate(ignoringOtherApps: true)
+    }
+
+    func windowWillClose(_ notification: Notification) {
+        guard let closingWindow = notification.object as? NSWindow,
+              closingWindow === startupWindow,
+              !startupLaunched else { return }
+        let micGranted = AVCaptureDevice.authorizationStatus(for: .audio) == .authorized
+        let axGranted = AXIsProcessTrusted()
+        if !micGranted || !axGranted {
+            NSApp.terminate(nil)
+        }
     }
 
     @objc private func quitApp() {
