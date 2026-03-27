@@ -258,20 +258,8 @@ struct SettingsView: View {
         accessibilityAuthorized = isAccessibilityGranted()
     }
 
-    /// Perform a real Accessibility API call to check permission status.
-    /// Unlike AXIsProcessTrusted() which caches results for the process lifetime,
-    /// this actually tests the current permission by querying an AXUIElement.
     private func isAccessibilityGranted() -> Bool {
-        let systemWide = AXUIElementCreateSystemWide()
-        var value: AnyObject?
-        let result = AXUIElementCopyAttributeValue(
-            systemWide,
-            kAXFocusedApplicationAttribute as CFString,
-            &value
-        )
-        // .apiDisabled means accessibility permission is NOT granted.
-        // Any other result (including .success, .noValue, etc.) means it IS granted.
-        return result != .apiDisabled
+        TextInjector.checkAccessibility(promptIfNeeded: false)
     }
 
     private func openMicrophoneSettings() {

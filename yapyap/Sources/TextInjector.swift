@@ -5,116 +5,232 @@ import os.log
 private let logger = Logger(subsystem: "cn.skyrin.yapyap", category: "TextInjector")
 
 enum TextInjector {
-    private static var injectedText = ""
+    private struct AXSession {
+        let element: AXUIElement
+        let insertionLocation: Int
+        var replacementLength: Int
+        var injectedText = ""
+    }
+
+    private static var axSession: AXSession?
+    private static var fallbackText = ""
     private static let queue = DispatchQueue(label: "cn.skyrin.yapyap.textinjector")
 
-    /// Check Accessibility permission using a real API call (no caching).
-    /// Only shows the system prompt dialog if permission is actually not granted.
-    static func checkAccessibility() -> Bool {
-        let systemWide = AXUIElementCreateSystemWide()
-        var value: AnyObject?
-        let result = AXUIElementCopyAttributeValue(
-            systemWide,
-            kAXFocusedApplicationAttribute as CFString,
-            &value
-        )
-        let granted = result != .apiDisabled
-        logger.info("Accessibility trusted: \(granted)")
+    /// Use the system trust API. If not trusted, optionally prompt.
+    static func checkAccessibility(promptIfNeeded: Bool = true) -> Bool {
+        if AXIsProcessTrusted() {
+            logger.info("Accessibility trusted: true")
+            return true
+        }
 
-        if !granted {
-            // Only show the system prompt when permission is truly not granted
+        logger.info("Accessibility trusted: false")
+        if promptIfNeeded {
             AXIsProcessTrustedWithOptions(
                 [kAXTrustedCheckOptionPrompt.takeUnretainedValue(): true] as CFDictionary
             )
         }
-        return granted
+        return false
     }
 
     /// Reset state at the beginning of a recording session.
+    /// Capture the focused control once so streaming updates keep replacing the
+    /// same insertion range instead of chasing focus while ASR revises text.
     static func reset() {
-        queue.sync { injectedText = "" }
+        queue.sync {
+            fallbackText = ""
+            axSession = captureAXSession()
+        }
     }
 
     /// Delete all injected text and reset state.
     static func clear() {
-        queue.sync {
-            let count = injectedText.count
-            if count > 0 {
-                sendBackspaces(count: count)
-            }
-            injectedText = ""
-        }
+        update(fullText: "")
     }
 
     /// Update the text at cursor to match the new full text from ASR.
-    /// Handles both appending new characters and correcting revised text.
+    /// Prefer direct AX replacement. Fall back to keyboard events only when the
+    /// focused control does not expose a writable text value/range.
     static func update(fullText: String) {
         queue.sync {
-            let oldText = injectedText
-
-            // Find common prefix
-            let commonPrefix = String(zip(oldText, fullText).prefix(while: { $0 == $1 }).map(\.0))
-            let charsToDelete = oldText.count - commonPrefix.count
-            let newChars = String(fullText.dropFirst(commonPrefix.count))
-
-            if charsToDelete == 0 && newChars.isEmpty { return }
-
-            logger.info("Injecting: delete=\(charsToDelete), insert=\"\(newChars)\" (old=\"\(oldText)\" -> new=\"\(fullText)\")")
-
-            // Delete divergent old characters
-            if charsToDelete > 0 {
-                sendBackspaces(count: charsToDelete)
+            if replaceViaAccessibility(fullText: fullText) {
+                return
             }
 
-            // Small delay between delete and insert so terminal TUI apps
-            // can finish processing backspaces before new text arrives.
-            if charsToDelete > 0 && !newChars.isEmpty {
-                usleep(10_000) // 10ms
-            }
-
-            // Type new characters
-            if !newChars.isEmpty {
-                sendText(newChars)
-            }
-
-            injectedText = fullText
+            updateViaKeyboardFallback(fullText: fullText)
         }
+    }
+
+    private static func captureAXSession() -> AXSession? {
+        guard checkAccessibility(promptIfNeeded: false) else { return nil }
+
+        let systemWide = AXUIElementCreateSystemWide()
+        guard let element = copyElementAttribute(systemWide, attribute: kAXFocusedUIElementAttribute) else {
+            logger.info("Focused UI element not available; falling back to keyboard injection")
+            return nil
+        }
+
+        guard let value = copyStringAttribute(element, attribute: kAXValueAttribute),
+              let selectedRange = copySelectedRange(from: element) else {
+            let role = copyStringAttribute(element, attribute: kAXRoleAttribute) ?? "unknown"
+            logger.info("Focused element role=\(role, privacy: .public) does not expose writable value/range; falling back to keyboard injection")
+            return nil
+        }
+
+        let stringLength = (value as NSString).length
+        let insertionLocation = max(0, min(selectedRange.location, stringLength))
+        let replacementLength = max(0, min(selectedRange.length, stringLength - insertionLocation))
+        let role = copyStringAttribute(element, attribute: kAXRoleAttribute) ?? "unknown"
+        logger.info("Captured AX text target role=\(role, privacy: .public), location=\(insertionLocation), selectionLength=\(replacementLength)")
+
+        return AXSession(
+            element: element,
+            insertionLocation: insertionLocation,
+            replacementLength: replacementLength
+        )
+    }
+
+    private static func replaceViaAccessibility(fullText: String) -> Bool {
+        guard var session = axSession else { return false }
+        guard let currentValue = copyStringAttribute(session.element, attribute: kAXValueAttribute) else {
+            logger.info("AX target no longer has readable value; switching to keyboard fallback")
+            axSession = nil
+            return false
+        }
+
+        let currentNSString = currentValue as NSString
+        let safeLocation = max(0, min(session.insertionLocation, currentNSString.length))
+        let safeLength = max(0, min(session.replacementLength, currentNSString.length - safeLocation))
+        let replacementRange = NSRange(location: safeLocation, length: safeLength)
+
+        let nextValue = currentNSString.replacingCharacters(in: replacementRange, with: fullText)
+        let setValueResult = AXUIElementSetAttributeValue(
+            session.element,
+            kAXValueAttribute as CFString,
+            nextValue as CFTypeRef
+        )
+        guard setValueResult == .success else {
+            logger.info("AX value write failed with code \(setValueResult.rawValue); switching to keyboard fallback")
+            axSession = nil
+            return false
+        }
+
+        var caret = CFRange(location: safeLocation + (fullText as NSString).length, length: 0)
+        if let rangeValue = AXValueCreate(.cfRange, &caret) {
+            let selectionResult = AXUIElementSetAttributeValue(
+                session.element,
+                kAXSelectedTextRangeAttribute as CFString,
+                rangeValue
+            )
+            if selectionResult != .success {
+                logger.debug("AX caret update failed with code \(selectionResult.rawValue)")
+            }
+        }
+
+        session.replacementLength = (fullText as NSString).length
+        session.injectedText = fullText
+        axSession = session
+        fallbackText = fullText
+        logger.info("Inserted text via AX: \"\(fullText, privacy: .public)\"")
+        return true
+    }
+
+    private static func updateViaKeyboardFallback(fullText: String) {
+        let oldText = fallbackText
+        let commonPrefix = String(zip(oldText, fullText).prefix(while: { $0 == $1 }).map(\.0))
+        let charsToDelete = oldText.count - commonPrefix.count
+        let newChars = String(fullText.dropFirst(commonPrefix.count))
+
+        if charsToDelete == 0 && newChars.isEmpty { return }
+
+        logger.info("Keyboard fallback: delete=\(charsToDelete), insert=\"\(newChars, privacy: .public)\" (old=\"\(oldText, privacy: .public)\" -> new=\"\(fullText, privacy: .public)\")")
+
+        if charsToDelete > 0 {
+            sendBackspaces(count: charsToDelete)
+        }
+
+        if charsToDelete > 0 && !newChars.isEmpty {
+            usleep(10_000)
+        }
+
+        if !newChars.isEmpty {
+            sendText(newChars)
+        }
+
+        fallbackText = fullText
+    }
+
+    private static func copyElementAttribute(_ element: AXUIElement, attribute: String) -> AXUIElement? {
+        var value: CFTypeRef?
+        let result = AXUIElementCopyAttributeValue(element, attribute as CFString, &value)
+        guard result == .success, let value else { return nil }
+        return (value as! AXUIElement)
+    }
+
+    private static func copyStringAttribute(_ element: AXUIElement, attribute: String) -> String? {
+        var value: CFTypeRef?
+        let result = AXUIElementCopyAttributeValue(element, attribute as CFString, &value)
+        guard result == .success else { return nil }
+        return value as? String
+    }
+
+    private static func copySelectedRange(from element: AXUIElement) -> CFRange? {
+        var value: CFTypeRef?
+        let result = AXUIElementCopyAttributeValue(
+            element,
+            kAXSelectedTextRangeAttribute as CFString,
+            &value
+        )
+        guard result == .success,
+              let axValue = value,
+              CFGetTypeID(axValue) == AXValueGetTypeID() else {
+            return nil
+        }
+
+        let rangeValue = axValue as! AXValue
+        guard AXValueGetType(rangeValue) == .cfRange else { return nil }
+        var range = CFRange()
+        guard AXValueGetValue(rangeValue, .cfRange, &range) else { return nil }
+        return range
     }
 
     private static func sendBackspaces(count: Int) {
-        // Use nil event source + session event tap to avoid fn key interference.
-        // .cghidEventTap posts at the HID level where the system re-applies
-        // the physical fn key state (fn+Delete = Forward Delete).
-        // .cgSessionEventTap posts after HID processing, bypassing fn remapping.
         for _ in 0..<count {
-            let keyDown = CGEvent(keyboardEventSource: nil, virtualKey: UInt16(kVK_Delete), keyDown: true)
-            keyDown?.flags = []
+            let keyDown = CGEvent(keyboardEventSource: nil, virtualKey: UInt16(kVK_LeftArrow), keyDown: true)
+            keyDown?.flags = .maskShift
             keyDown?.post(tap: .cgSessionEventTap)
-            let keyUp = CGEvent(keyboardEventSource: nil, virtualKey: UInt16(kVK_Delete), keyDown: false)
-            keyUp?.flags = []
+            let keyUp = CGEvent(keyboardEventSource: nil, virtualKey: UInt16(kVK_LeftArrow), keyDown: false)
+            keyUp?.flags = .maskShift
             keyUp?.post(tap: .cgSessionEventTap)
-            usleep(2_000) // 2ms between backspaces for TUI compatibility
+            usleep(1_000)
         }
+
+        usleep(5_000)
+
+        let delDown = CGEvent(keyboardEventSource: nil, virtualKey: UInt16(kVK_Delete), keyDown: true)
+        delDown?.post(tap: .cgSessionEventTap)
+        let delUp = CGEvent(keyboardEventSource: nil, virtualKey: UInt16(kVK_Delete), keyDown: false)
+        delUp?.post(tap: .cgSessionEventTap)
     }
 
     private static func sendText(_ text: String) {
-        // Use nil event source + session event tap to bypass fn key remapping.
-        let utf16 = Array(text.utf16)
+        let pasteboard = NSPasteboard.general
+        let backup = pasteboard.string(forType: .string)
 
-        // CGEventKeyboardSetUnicodeString can handle up to 20 chars at a time
-        let chunkSize = 20
-        for i in stride(from: 0, to: utf16.count, by: chunkSize) {
-            let end = min(i + chunkSize, utf16.count)
-            var chunk = Array(utf16[i..<end])
+        pasteboard.clearContents()
+        pasteboard.setString(text, forType: .string)
 
-            let keyDown = CGEvent(keyboardEventSource: nil, virtualKey: 0, keyDown: true)
-            keyDown?.keyboardSetUnicodeString(stringLength: chunk.count, unicodeString: &chunk)
-            keyDown?.flags = []
-            keyDown?.post(tap: .cgSessionEventTap)
+        let vDown = CGEvent(keyboardEventSource: nil, virtualKey: UInt16(kVK_ANSI_V), keyDown: true)
+        vDown?.flags = .maskCommand
+        vDown?.post(tap: .cgSessionEventTap)
+        let vUp = CGEvent(keyboardEventSource: nil, virtualKey: UInt16(kVK_ANSI_V), keyDown: false)
+        vUp?.flags = .maskCommand
+        vUp?.post(tap: .cgSessionEventTap)
 
-            let keyUp = CGEvent(keyboardEventSource: nil, virtualKey: 0, keyDown: false)
-            keyUp?.flags = []
-            keyUp?.post(tap: .cgSessionEventTap)
+        usleep(50_000)
+
+        pasteboard.clearContents()
+        if let backup {
+            pasteboard.setString(backup, forType: .string)
         }
     }
 }
