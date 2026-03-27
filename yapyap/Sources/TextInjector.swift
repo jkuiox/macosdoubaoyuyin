@@ -159,16 +159,16 @@ enum TextInjector {
         fallbackText = fullText
     }
 
-    private static func copyElementAttribute(_ element: AXUIElement, attribute: String) -> AXUIElement? {
+    private static func copyElementAttribute(_ element: AXUIElement, attribute: CFString) -> AXUIElement? {
         var value: CFTypeRef?
-        let result = AXUIElementCopyAttributeValue(element, attribute as CFString, &value)
+        let result = AXUIElementCopyAttributeValue(element, attribute, &value)
         guard result == .success, let value else { return nil }
         return (value as! AXUIElement)
     }
 
-    private static func copyStringAttribute(_ element: AXUIElement, attribute: String) -> String? {
+    private static func copyStringAttribute(_ element: AXUIElement, attribute: CFString) -> String? {
         var value: CFTypeRef?
-        let result = AXUIElementCopyAttributeValue(element, attribute as CFString, &value)
+        let result = AXUIElementCopyAttributeValue(element, attribute, &value)
         guard result == .success else { return nil }
         return value as? String
     }
