@@ -115,7 +115,7 @@ class MicIndicatorView: NSView {
 
     override func draw(_ dirtyRect: NSRect) {
         super.draw(dirtyRect)
-        guard let context = NSGraphicsContext.current?.cgContext else { return }
+        guard (NSGraphicsContext.current?.cgContext) != nil else { return }
 
         // Draw capsule background
         let capsulePath = NSBezierPath(roundedRect: bounds, xRadius: bounds.height / 2, yRadius: bounds.height / 2)

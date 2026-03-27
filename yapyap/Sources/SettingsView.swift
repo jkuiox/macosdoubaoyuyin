@@ -12,7 +12,7 @@ struct SettingsView: View {
     var isStartup: Bool = false
     var onLaunch: (() -> Void)?
 
-    private let permissionTimer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+    private let permissionTimer = Timer.publish(every: 0.5, on: .main, in: .common).autoconnect()
 
     enum TestState {
         case idle
@@ -201,6 +201,14 @@ struct SettingsView: View {
         .frame(width: 420, height: isStartup ? 700 : 640)
         .onAppear { checkPermissions() }
         .onReceive(permissionTimer) { _ in checkPermissions() }
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+            checkPermissions()
+        }
+        .onReceive(DistributedNotificationCenter.default().publisher(for: Notification.Name("com.apple.accessibility.api"))) { _ in
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                checkPermissions()
+            }
+        }
     }
 
     // MARK: - Permission rows
@@ -247,7 +255,23 @@ struct SettingsView: View {
 
     private func checkPermissions() {
         micAuthorized = AVCaptureDevice.authorizationStatus(for: .audio) == .authorized
-        accessibilityAuthorized = AXIsProcessTrusted()
+        accessibilityAuthorized = isAccessibilityGranted()
+    }
+
+    /// Perform a real Accessibility API call to check permission status.
+    /// Unlike AXIsProcessTrusted() which caches results for the process lifetime,
+    /// this actually tests the current permission by querying an AXUIElement.
+    private func isAccessibilityGranted() -> Bool {
+        let systemWide = AXUIElementCreateSystemWide()
+        var value: AnyObject?
+        let result = AXUIElementCopyAttributeValue(
+            systemWide,
+            kAXFocusedApplicationAttribute as CFString,
+            &value
+        )
+        // .apiDisabled means accessibility permission is NOT granted.
+        // Any other result (including .success, .noValue, etc.) means it IS granted.
+        return result != .apiDisabled
     }
 
     private func openMicrophoneSettings() {
