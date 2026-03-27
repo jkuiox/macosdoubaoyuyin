@@ -8,13 +8,26 @@ enum TextInjector {
     private static var injectedText = ""
     private static let queue = DispatchQueue(label: "cn.skyrin.yapyap.textinjector")
 
-    /// Check and request Accessibility permission.
+    /// Check Accessibility permission using a real API call (no caching).
+    /// Only shows the system prompt dialog if permission is actually not granted.
     static func checkAccessibility() -> Bool {
-        let trusted = AXIsProcessTrustedWithOptions(
-            [kAXTrustedCheckOptionPrompt.takeUnretainedValue(): true] as CFDictionary
+        let systemWide = AXUIElementCreateSystemWide()
+        var value: AnyObject?
+        let result = AXUIElementCopyAttributeValue(
+            systemWide,
+            kAXFocusedApplicationAttribute as CFString,
+            &value
         )
-        logger.info("Accessibility trusted: \(trusted)")
-        return trusted
+        let granted = result != .apiDisabled
+        logger.info("Accessibility trusted: \(granted)")
+
+        if !granted {
+            // Only show the system prompt when permission is truly not granted
+            AXIsProcessTrustedWithOptions(
+                [kAXTrustedCheckOptionPrompt.takeUnretainedValue(): true] as CFDictionary
+            )
+        }
+        return granted
     }
 
     /// Reset state at the beginning of a recording session.

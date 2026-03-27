@@ -214,7 +214,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
               closingWindow === startupWindow,
               !startupLaunched else { return }
         let micGranted = AVCaptureDevice.authorizationStatus(for: .audio) == .authorized
-        let axGranted = AXIsProcessTrusted()
+        let axGranted = TextInjector.checkAccessibility()
         if !micGranted || !axGranted {
             NSApp.terminate(nil)
         }
