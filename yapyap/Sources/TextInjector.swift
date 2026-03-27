@@ -82,21 +82,23 @@ enum TextInjector {
     }
 
     private static func sendBackspaces(count: Int) {
-        let source = CGEventSource(stateID: .hidSystemState)
+        // Use nil event source + session event tap to avoid fn key interference.
+        // .cghidEventTap posts at the HID level where the system re-applies
+        // the physical fn key state (fn+Delete = Forward Delete).
+        // .cgSessionEventTap posts after HID processing, bypassing fn remapping.
         for _ in 0..<count {
-            let keyDown = CGEvent(keyboardEventSource: source, virtualKey: UInt16(kVK_Delete), keyDown: true)
-            keyDown?.flags = []  // Clear all modifiers (fn key held during recording)
-            keyDown?.post(tap: .cghidEventTap)
-            let keyUp = CGEvent(keyboardEventSource: source, virtualKey: UInt16(kVK_Delete), keyDown: false)
+            let keyDown = CGEvent(keyboardEventSource: nil, virtualKey: UInt16(kVK_Delete), keyDown: true)
+            keyDown?.flags = []
+            keyDown?.post(tap: .cgSessionEventTap)
+            let keyUp = CGEvent(keyboardEventSource: nil, virtualKey: UInt16(kVK_Delete), keyDown: false)
             keyUp?.flags = []
-            keyUp?.post(tap: .cghidEventTap)
+            keyUp?.post(tap: .cgSessionEventTap)
             usleep(2_000) // 2ms between backspaces for TUI compatibility
         }
     }
 
     private static func sendText(_ text: String) {
-        // Use CGEvent with unicode string for reliable CJK input
-        let source = CGEventSource(stateID: .hidSystemState)
+        // Use nil event source + session event tap to bypass fn key remapping.
         let utf16 = Array(text.utf16)
 
         // CGEventKeyboardSetUnicodeString can handle up to 20 chars at a time
@@ -105,14 +107,14 @@ enum TextInjector {
             let end = min(i + chunkSize, utf16.count)
             var chunk = Array(utf16[i..<end])
 
-            let keyDown = CGEvent(keyboardEventSource: source, virtualKey: 0, keyDown: true)
+            let keyDown = CGEvent(keyboardEventSource: nil, virtualKey: 0, keyDown: true)
             keyDown?.keyboardSetUnicodeString(stringLength: chunk.count, unicodeString: &chunk)
-            keyDown?.flags = []  // Clear all modifiers (fn key held during recording)
-            keyDown?.post(tap: .cghidEventTap)
+            keyDown?.flags = []
+            keyDown?.post(tap: .cgSessionEventTap)
 
-            let keyUp = CGEvent(keyboardEventSource: source, virtualKey: 0, keyDown: false)
+            let keyUp = CGEvent(keyboardEventSource: nil, virtualKey: 0, keyDown: false)
             keyUp?.flags = []
-            keyUp?.post(tap: .cghidEventTap)
+            keyUp?.post(tap: .cgSessionEventTap)
         }
     }
 }
